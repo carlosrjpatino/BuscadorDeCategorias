@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navegación de Categorías CBT</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; text-align: center; }
+    .container { max-width: 900px; margin: auto; padding: 20px; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); border-radius: 8px; }
+    h1 { color: #333; }
+    #navegacion { font-size: 1rem; font-weight: bold; background-color: #eef2ff; padding: 10px; border-radius: 5px; display: inline-block; }
+    .categorias-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; justify-content: center; padding-top: 20px; }
+    .categoria { padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; cursor: pointer; border-radius: 8px; transition: 0.3s; text-align: center; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+    .categoria:hover { background-color: #ddeeff; }
+    .categoria div { font-size: 1rem; font-weight: bold; }
+    .categoria span { display: block; margin-top: 5px; font-size: 0.9rem; color: #555; }
+    .btn { padding: 10px 15px; background-color: #007bff; color: #ffffff; border: none; border-radius: 5px; cursor: pointer; margin-top: 5px; display: block; width: 100%; }
+    .btn:hover { background-color: #0056b3; }
+    .final { background-color: #ffebcd; font-weight: bold; }
+    footer { margin-top: 30px; padding: 15px; background-color: #ddd; font-weight: bold; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Navegación de Categorías CBT</h1>
+    <div id="navegacion">Ubicación: Categorías principales</div>
+    <button class="btn" onclick="volverInicio()">Ir a Categorías Principales</button>
+    <button class="btn" onclick="volverAtras()">Volver Atrás</button>
+    <div class="categorias-container" id="categorias"></div>
+  </div>
+
+  <footer>Diseñado por Carlos</footer>
+
+  <script>
+    const ACCESS_TOKEN = "APP_USR-3686598033469780-051206-fd68f5200393f9280637e936f4363df2-780239457";
+    const API_URL = `https://api.mercadolibre.com/sites/CBT/categories?access_token=${ACCESS_TOKEN}`;
+    const contenedorCategorias = document.getElementById("categorias");
+    const rutaNavegacion = document.getElementById("navegacion");
+    let historialCategorias = [];
+
+    async function obtenerCategorias(url) {
+      try {
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) throw new Error(`Error al obtener datos: ${respuesta.status}`);
+        const datos = await respuesta.json();
+        mostrarCategorias(datos);
+      } catch (error) {
+        contenedorCategorias.innerHTML = `<p>Error: ${error.message}</p>`;
+      }
+    }
+
+    function mostrarCategorias(categorias) {
+      contenedorCategorias.innerHTML = "";
+      categorias.forEach(categoria => {
+        const div = document.createElement("div");
+        div.className = "categoria";
+        div.innerHTML = `<div>${categoria.name}</div>
+                         <span>ID CBT: ${categoria.id}</span>
+                         <button class="btn" onclick="event.stopPropagation(); copiarTexto('${categoria.id}')">Copiar CBT</button>`;
+        div.onclick = () => navegarCategoria(categoria.id, categoria.name);
+        contenedorCategorias.appendChild(div);
+      });
+    }
+
+    async function navegarCategoria(id, nombre) {
+      const url = `https://api.mercadolibre.com/categories/${id}?access_token=${ACCESS_TOKEN}`;
+      try {
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) throw new Error(`Error al obtener subcategorías: ${respuesta.status}`);
+        const datos = await respuesta.json();
+        historialCategorias.push({ id, nombre });
+
+        rutaNavegacion.innerHTML = `Ubicación: ${historialCategorias.map(cat => `<span>${cat.nombre}</span>`).join(" > ")}`;
+        if (datos.children_categories.length > 0) {
+          mostrarCategorias(datos.children_categories);
+        } else {
+          contenedorCategorias.innerHTML = `<div class="categoria final">Categoría Final: ${nombre}<br>ID CBT: ${id}</div>`;
+        }
+      } catch (error) {
+        contenedorCategorias.innerHTML = `<p>Error: ${error.message}</p>`;
+      }
+    }
+
+    function copiarTexto(texto) {
+      navigator.clipboard.writeText(texto).then(() => alert(`ID copiado: ${texto}`));
+    }
+
+    function volverAtras() {
+      if (historialCategorias.length > 1) {
+        historialCategorias.pop();
+        const categoriaAnterior = historialCategorias[historialCategorias.length - 1];
+        rutaNavegacion.innerHTML = `Ubicación: ${historialCategorias.map(cat => `<span>${cat.nombre}</span>`).join(" > ")}`;
+        navegarCategoria(categoriaAnterior.id, categoriaAnterior.nombre);
+      } else {
+        obtenerCategorias(API_URL);
+      }
+    }
+
+    function volverInicio() {
+      historialCategorias = [];
+      rutaNavegacion.innerHTML = "Ubicación: Categorías principales";
+      obtenerCategorias(API_URL);
+    }
+
+    obtenerCategorias(API_URL);
+  </script>
+</body>
+</html>
