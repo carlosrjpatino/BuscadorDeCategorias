@@ -5,20 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Navegación de Categorías CBT</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; text-align: center; }
-    .container { max-width: 900px; margin: auto; padding: 20px; background-color: #ffffff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); border-radius: 8px; }
-    h1 { color: #333; display: flex; align-items: center; justify-content: center; gap: 20px; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background-image: url("fondo.jpg"); 
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      margin: 0; padding: 20px; text-align: center;
+    }
+    .container { 
+      max-width: 1200px; 
+      margin: 20px auto; 
+      padding: 20px; 
+      background-color: rgba(255, 255, 255, 0.9); 
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+      border-radius: 8px; 
+    }
+    h1 { 
+      color: #333; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 20px; 
+    }
     .logo { width: 150px; height: 150px; }
-    #navegacion { font-size: 1rem; font-weight: bold; background-color: #eef2ff; padding: 10px; border-radius: 5px; display: inline-block; }
-    .categorias-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; justify-content: center; padding-top: 20px; }
-    .categoria { padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; cursor: pointer; border-radius: 8px; transition: 0.3s; text-align: center; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+    #navegacion { 
+      font-size: 1rem; 
+      font-weight: bold; 
+      background-color: #eef2ff; 
+      padding: 10px; 
+      border-radius: 5px; 
+      display: inline-block; 
+    }
+    .categorias-container { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 20px; 
+      justify-content: center; 
+      padding-top: 20px; 
+    }
+    .categoria { 
+      padding: 15px; 
+      border: 1px solid #ddd; 
+      background-color: #f9f9f9; 
+      cursor: pointer; 
+      border-radius: 8px; 
+      transition: 0.3s; 
+      text-align: center; 
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); 
+    }
     .categoria:hover { background-color: #ddeeff; }
     .categoria div { font-size: 1rem; font-weight: bold; }
-    .categoria span { display: block; margin-top: 5px; font-size: 0.9rem; color: #555; }
-    .btn { padding: 10px 15px; background-color: #007bff; color: #ffffff; border: none; border-radius: 5px; cursor: pointer; margin-top: 5px; display: block; width: 100%; }
+    .botones-container { 
+      display: flex; 
+      justify-content: center; 
+      gap: 10px; 
+      margin-top: 15px; 
+    }
+    .btn { 
+      padding: 10px 15px; 
+      background-color: #007bff; 
+      color: #ffffff; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      width: auto; /* No ocupa toda la página */
+    }
     .btn:hover { background-color: #0056b3; }
-    .final { background-color: #ffebcd; font-weight: bold; }
-    footer { margin-top: 30px; padding: 15px; background-color: #ddd; font-weight: bold; border-radius: 5px; }
+    .final { 
+      background-color: #ffebcd; 
+      font-weight: bold; 
+      padding: 15px; 
+      border-radius: 8px; 
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); 
+    }
+    footer { 
+      margin-top: 30px; 
+      padding: 15px; 
+      background-color: rgba(221, 221, 221, 0.8); 
+      font-weight: bold; 
+      border-radius: 5px; 
+    }
   </style>
 </head>
 <body>
@@ -28,8 +95,10 @@
       Navegación de Categorías CBT
     </h1>
     <div id="navegacion">Ubicación: Categorías principales</div>
-    <button class="btn" onclick="volverInicio()">Ir a Categorías Principales</button>
-    <button class="btn" onclick="volverAtras()">Volver Atrás</button>
+    <div id="botones" class="botones-container" style="display: none;">
+      <button class="btn" onclick="volverInicio()">Ir a Categorías Principales</button>
+      <button class="btn" onclick="volverAtras()">Volver Atrás</button>
+    </div>
     <div class="categorias-container" id="categorias"></div>
   </div>
 
@@ -59,11 +128,12 @@
         const div = document.createElement("div");
         div.className = "categoria";
         div.innerHTML = `<div>${categoria.name}</div>
-                         <span>ID CBT: ${categoria.id}</span>
-                         <button class="btn" onclick="event.stopPropagation(); copiarTexto('${categoria.id}')">Copiar CBT</button>`;
+                         <button class="btn" onclick="event.stopPropagation(); copiarTexto('${categoria.id}')">${categoria.id}</button>`;
         div.onclick = () => navegarCategoria(categoria.id, categoria.name);
         contenedorCategorias.appendChild(div);
       });
+
+      document.getElementById("botones").style.display = historialCategorias.length > 0 ? "flex" : "none";
     }
 
     async function navegarCategoria(id, nombre) {
@@ -78,8 +148,11 @@
         if (datos.children_categories.length > 0) {
           mostrarCategorias(datos.children_categories);
         } else {
-          contenedorCategorias.innerHTML = `<div class="categoria final">Categoría Final: ${nombre}<br>ID CBT: ${id}</div>`;
+          contenedorCategorias.innerHTML = `<div class="categoria final">Categoría Final: ${nombre}
+                                             <button class="btn" onclick="copiarTexto('${id}')">${id}</button></div>`;
         }
+
+        document.getElementById("botones").style.display = "flex";
       } catch (error) {
         contenedorCategorias.innerHTML = `<p>Error: ${error.message}</p>`;
       }
